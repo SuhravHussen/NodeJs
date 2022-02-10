@@ -1,0 +1,36 @@
+/*
+title : Handle Request and Response
+Description: Handle request and response
+*/
+
+// dependencies
+const { URL } = require('url');
+const url = require('url');
+const { StringDecoder } = require('string_decoder');
+// module scaffolding
+const handler = {};
+
+handler.handleRedRes = (req, res) => {
+    // request handling
+    // get the url and parse it
+    const parsedUrl = new URL(`http://${req.headers.host}${req.url}`);
+    const path = parsedUrl.pathname.replace(/^\/+|\/+$/g, '');
+    const method = req.method.toLowerCase();
+    const { query } = url.parse(req.url, true);
+    const { headers } = req;
+
+    const decoder = new StringDecoder('utf-8');
+    let realData = '';
+    req.on('data', (buffer) => {
+        realData += decoder.write(buffer);
+    });
+
+    req.on('end', () => {
+        realData += decoder.end();
+        console.log(realData);
+        // response handle
+        res.end('hello world');
+    });
+};
+
+module.exports = handler;
