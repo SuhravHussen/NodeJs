@@ -7,6 +7,8 @@ Description: Handle request and response
 const { URL } = require('url');
 const url = require('url');
 const { StringDecoder } = require('string_decoder');
+const routes = require('../routes');
+const { notFound } = require('../handlers/routeHandlers/notfoundHandler');
 // module scaffolding
 const handler = {};
 
@@ -18,9 +20,28 @@ handler.handleRedRes = (req, res) => {
     const method = req.method.toLowerCase();
     const { query } = url.parse(req.url, true);
     const { headers } = req;
-
+    const requestProperties = {
+        parsedUrl,
+        path,
+        method,
+        query,
+        headers,
+    };
     const decoder = new StringDecoder('utf-8');
     let realData = '';
+
+    const chosenHandler = routes[path] ? routes[path] : notFound;
+
+    chosenHandler(requestProperties, (statusCode, payload) => {
+        statusCode = typeof statusCode === 'number' ? statusCode : 500;
+        payload = typeof payload === 'object' ? payload : {};
+
+        const payloadString = JSON.stringify(payload);
+
+        // return the final response
+        res.writeHead(statusCode);
+        res.end(payloadString);
+    });
     req.on('data', (buffer) => {
         realData += decoder.write(buffer);
     });
