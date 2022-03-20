@@ -31,17 +31,6 @@ handler.handleRedRes = (req, res) => {
     let realData = '';
 
     const chosenHandler = routes[path] ? routes[path] : notFound;
-
-    chosenHandler(requestProperties, (statusCode, payload) => {
-        statusCode = typeof statusCode === 'number' ? statusCode : 500;
-        payload = typeof payload === 'object' ? payload : {};
-
-        const payloadString = JSON.stringify(payload);
-
-        // return the final response
-        res.writeHead(statusCode);
-        res.end(payloadString);
-    });
     req.on('data', (buffer) => {
         realData += decoder.write(buffer);
     });
@@ -49,6 +38,18 @@ handler.handleRedRes = (req, res) => {
     req.on('end', () => {
         realData += decoder.end();
         console.log(realData);
+        chosenHandler(requestProperties, (statusCode, payload) => {
+            // eslint-disable-next-line no-param-reassign
+            statusCode = typeof statusCode === 'number' ? statusCode : 500;
+            // eslint-disable-next-line no-param-reassign
+            payload = typeof payload === 'object' ? payload : {};
+
+            const payloadString = JSON.stringify(payload);
+
+            // return the final response
+            res.writeHead(statusCode);
+            res.end(payloadString);
+        });
         // response handle
         res.end('hello world');
     });
