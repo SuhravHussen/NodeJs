@@ -9,6 +9,8 @@ const url = require('url');
 const { StringDecoder } = require('string_decoder');
 const routes = require('../routes');
 const { notFound } = require('../handlers/routeHandlers/notfoundHandler');
+const { parseJson } = require('./utilities');
+
 // module scaffolding
 const handler = {};
 
@@ -38,6 +40,7 @@ handler.handleRedRes = (req, res) => {
     req.on('end', () => {
         realData += decoder.end();
         console.log(realData);
+        requestProperties.body = parseJson(realData);
         chosenHandler(requestProperties, (statusCode, payload) => {
             // eslint-disable-next-line no-param-reassign
             statusCode = typeof statusCode === 'number' ? statusCode : 500;
@@ -47,11 +50,10 @@ handler.handleRedRes = (req, res) => {
             const payloadString = JSON.stringify(payload);
 
             // return the final response
+            res.setHeader('Content-Type', 'application/json');
             res.writeHead(statusCode);
             res.end(payloadString);
         });
-        // response handle
-        res.end('hello world');
     });
 };
 

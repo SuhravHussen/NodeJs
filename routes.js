@@ -4,11 +4,11 @@ Routes
 */
 
 // dependencies
-const { sampleHandler } = require('./handlers/routeHandlers/sampleHandler');
+const { userHandler } = require('./handlers/routeHandlers/userHandler');
 const { notFound } = require('./handlers/routeHandlers/notfoundHandler');
 
 const routes = {
-    sample: sampleHandler,
+    user: userHandler,
     notFound,
 };
 
