@@ -1,12 +1,11 @@
 /* eslint-disable no-underscore-dangle */
 // dependencies
 const data = require('../../lib/data');
-const { hash } = require('../../helpers/utilities');
+const { hash, parseJson } = require('../../helpers/utilities');
 
 // module scaffolding
 const handler = {};
 handler.userHandler = (requestProperties, callback) => {
-    console.log(requestProperties);
     const acceptedMethods = ['get', 'post', 'put', 'delete'];
     if (acceptedMethods.indexOf(requestProperties.method) > -1) {
         handler._users[requestProperties.method](requestProperties, callback);
@@ -81,11 +80,128 @@ handler._users.post = (requestProperties, callback) => {
     }
 };
 handler._users.get = (requestProperties, callback) => {
-    callback(200, {
-        message: 'This is a user url',
-    });
+    // check the phone number validation
+    const phone =
+        typeof requestProperties.query.phone === 'string' &&
+        requestProperties.query.phone.trim().length === 11
+            ? requestProperties.query.phone
+            : false;
+    if (phone) {
+        // search user
+        data.read('users', phone, (err, u) => {
+            const user = { ...parseJson(u) };
+            if (!err && user) {
+                delete user.password;
+                callback(200, user);
+            } else {
+                callback(404, { message: 'user not found' });
+            }
+        });
+    } else {
+        callback(404, { message: 'invalid phone number' });
+    }
 };
-handler._users.put = (requestProperties, callback) => {};
-handler._users.delete = (requestProperties, callback) => {};
+handler._users.put = (requestProperties, callback) => {
+    const firstName =
+        typeof requestProperties.body.firstName === 'string' &&
+        requestProperties.body.firstName.trim().length > 0
+            ? requestProperties.body.firstName
+            : false;
+
+    const lastName =
+        typeof requestProperties.body.lastName === 'string' &&
+        requestProperties.body.lastName.trim().length > 0
+            ? requestProperties.body.lastName
+            : false;
+
+    const phone =
+        typeof requestProperties.body.phone === 'string' &&
+        requestProperties.body.phone.trim().length === 11
+            ? requestProperties.body.phone
+            : false;
+
+    const password =
+        typeof requestProperties.body.password === 'string' &&
+        requestProperties.body.password.trim().length > 0
+            ? requestProperties.body.password
+            : false;
+
+    if (phone) {
+        if (firstName || lastName || password) {
+            // find user
+            data.read('users', phone, (err, u) => {
+                const user = { ...parseJson(u) };
+
+                if (!err && user) {
+                    if (firstName) {
+                        user.firstName = firstName;
+                    }
+                    if (lastName) {
+                        user.lastName = lastName;
+                    }
+                    if (password) {
+                        user.password = hash(password);
+                    }
+                    // update data base
+                    data.update('users', phone, user, (err2) => {
+                        if (!err2) {
+                            callback(200, {
+                                message: 'update successfully',
+                            });
+                        } else {
+                            callback(500, {
+                                message: 'error from server to update data',
+                            });
+                        }
+                    });
+                } else {
+                    callback(400, {
+                        message: ' user not found',
+                    });
+                }
+            });
+        } else {
+            callback(400, {
+                message: ' no update field found',
+            });
+        }
+    } else {
+        callback(400, {
+            message: 'Invalid Phone number',
+        });
+    }
+};
+handler._users.delete = (requestProperties, callback) => {
+    const phone =
+        typeof requestProperties.query.phone === 'string' &&
+        requestProperties.query.phone.trim().length === 11
+            ? requestProperties.query.phone
+            : false;
+    if (phone) {
+        data.read('users', phone, (error1, readData) => {
+            if (!error1 && readData) {
+                data.delete('users', phone, (error2) => {
+                    if (!error2) {
+                        callback(200, {
+                            message: 'delete successful',
+                        });
+                    } else {
+                        callback(500, {
+                            message: 'problem in deleting data',
+                        });
+                    }
+                });
+            } else {
+                callback(500, {
+                    message: 'couldnt find user',
+                });
+            }
+        });
+    } else {
+        callback(400, {
+            message: 'Invalid phone number',
+        });
+    }
+};
 
 module.exports = handler;

@@ -39,7 +39,7 @@ handler.handleRedRes = (req, res) => {
 
     req.on('end', () => {
         realData += decoder.end();
-        console.log(realData);
+
         requestProperties.body = parseJson(realData);
         chosenHandler(requestProperties, (statusCode, payload) => {
             // eslint-disable-next-line no-param-reassign
