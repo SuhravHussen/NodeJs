@@ -20,6 +20,7 @@
     "prettier": "^2.5.1"
   },
   "dependencies": {
+    "eslint-plugin-unused-imports": "^2.0.0",
     "nodemon": "^2.0.15"
   }
 }
