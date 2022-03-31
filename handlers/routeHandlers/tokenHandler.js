@@ -151,5 +151,20 @@ handler._token.delete = (requestProperties, callback) => {
         });
     }
 };
-
+handler._token.verify = (verifiyTokenId, phone, callback) => {
+    const token = typeof verifiyTokenId === 'string' ? verifiyTokenId : false;
+    data.read('tokens', token, (err, tokenData) => {
+        if (!err && tokenData) {
+            if (parseJson(tokenData).phone === phone && parseJson(tokenData).expire > Date.now()) {
+                console.log('hello', tokenData);
+                callback(true);
+            } else {
+                callback(false);
+            }
+        } else {
+            console.log(err);
+            callback(false);
+        }
+    });
+};
 module.exports = handler;
