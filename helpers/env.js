@@ -4,12 +4,14 @@ environments.staging = {
     port: 3000,
     envName: 'staging',
     secretKey: 'staging',
+    maxChecks: 5,
 };
 
 environments.production = {
     port: 5000,
     envName: 'production',
     secretKey: 'production',
+    maxChecks: 5,
 };
 
 // check stage
