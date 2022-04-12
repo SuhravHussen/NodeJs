@@ -9,7 +9,6 @@
 
 // dependencies
 const https = require('https');
-const querystring = require('querystring');
 const { twilio } = require('./env');
 
 // module scaffolding
@@ -35,7 +34,6 @@ notifications.sendTwilioSms = (phone, msg, callback) => {
         };
 
         // stringify the payload
-        const stringifyPayload = querystring.stringify(payload);
         const stringifyPayload2 = new URLSearchParams(payload).toString();
 
         // configure the request details
